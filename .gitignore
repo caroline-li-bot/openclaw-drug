@@ -19,56 +19,12 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-PYMANIFEST
 
-# Virtual environment
-.env
-.venv
-env/
+# Virtual Environment
 venv/
-ENV/
-
-# Data files
-*.csv
-*.xlsx
-*.xls
-*.sdf
-*.mol
-*.pdb
-*.pdbqt
-*.mol2
-*.smi
-*.txt
-*.md
-!README.md
-!LICENSE
-!*.md
-!.gitignore
-!skill.yaml
-!requirements.txt
-
-# Models
-models/
-*.pth
-*.pt
-*.bin
-
-# Logs
-logs/
-*.log
-logging/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.temp
-.DS_Store
-Thumbs.db
-
-# Jupyter Notebook
-.ipynb_checkpoints
-*.ipynb
+.venv/
+env/
+.env/
 
 # IDE
 .vscode/
@@ -77,7 +33,25 @@ Thumbs.db
 *.swo
 *~
 
+# Environment and secrets
+navigator_api_keys.json
+*.env
+.env
+.env.*
+*.pem
+*.key
+
+# Local resources
+resources_metadata/
+query_logs/
+models/
+
 # OS
 .DS_Store
 Thumbs.db
-.vercel
+
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml

@@ -1,8 +1,8 @@
-name: openclaw-drug
-version: 0.1.0
-description: 药物研发自动化助手，覆盖从靶点发现到临床试验设计的全流程自动化
-author: OpenClaw Team
-homepage: https://github.com/openclaw/openclaw-drug
+name: drugclaw
+version: 0.2.0
+description: "DrugClaw: AI-powered drug discovery assistant with agentic retrieval and 15-category skill tree"
+author: DrugClaw Contributors
+homepage: https://github.com/caroline-li-bot/DrugClaw
 license: MIT
 
 tags:
@@ -10,188 +10,171 @@ tags:
   - cheminformatics
   - virtual-screening
   - admet
+  - drug-target-interaction
+  - adverse-drug-reactions
+  - pharmacogenomics
+  - drug-repurposing
   - literature-analysis
+  - agentic-rag
 
 dependencies:
   python: >=3.9
   pip:
-    - rdkit>=2023.9.5
-    - pandas>=2.2.1
-    - numpy>=1.26.4
-    - scikit-learn>=1.4.1.post1
-    - torch>=2.2.1
-    - transformers>=4.38.2
+    - openai>=1.0.0
+    - langchain>=0.1.0
+    - rdkit>=2022.09.1
+    - supabase>=2.0.0
+    - flask>=2.0.0
+    - pandas>=2.0.0
+    - numpy>=1.24.0
+    - scikit-learn>=1.2.0
+    - matplotlib>=3.7.0
+    - plotly>=5.15.0
+    - transformers>=4.30.0
+    - torch>=2.0.0
     - biopython>=1.83
     - pubchempy>=1.0.4
     - requests>=2.31.0
     - beautifulsoup4>=4.12.3
-    - plotly>=5.20.0
     - scipy>=1.12.0
     - tqdm>=4.66.2
-    - pyyaml>=6.0.1
-    - pydantic>=2.6.4
 
 system_dependencies:
-  - autodock-vina
-  - mgltools
-  - pymol
+  - autodock-vina (optional, for virtual screening)
+  - mgltools (optional, for virtual screening)
+  - pymol (optional, for visualization)
 
 commands:
+  list:
+    description: List all available skills and categories
+    executable: python -m drugclaw list
+
+  doctor:
+    description: Check configuration health
+    executable: python -m drugclaw doctor
+
+  demo:
+    description: Run demo query (metformin safety information)
+    executable: python -m drugclaw demo
+
+  run:
+    description: Run a custom query
+    parameters:
+      query:
+        type: string
+        description: Query text
+        required: true
+      key-file:
+        type: string
+        description: API key configuration file
+        default: navigator_api_keys.json
+      thinking-mode:
+        type: string
+        description: Thinking mode (simple/graph/web_only)
+      show-plan:
+        type: boolean
+        description: Show query analysis plan
+        default: false
+      show-evidence:
+        type: boolean
+        description: Show raw evidence
+        default: false
+      save-md-report:
+        type: boolean
+        description: Save result as Markdown report
+        default: false
+    executable: python -m drugclaw run
+
   literature-analyze:
-    description: 文献分析，自动搜索和分析学术文献
+    description: Legacy: Literature analysis (deprecated, use run instead)
     parameters:
       keyword:
         type: string
-        description: 搜索关键词
+        description: Search keyword
         required: true
       output:
         type: string
-        description: 输出报告路径
+        description: Output report path
         default: literature_report.md
       max-papers:
         type: integer
-        description: 最大文献数量
+        description: Maximum papers
         default: 50
-      days:
-        type: integer
-        description: 搜索最近多少天的文献
-        default: 365
     executable: python skills/literature_analysis.py
 
-  virtual-screening:
-    description: 虚拟筛选，自动化分子对接和化合物筛选
-    parameters:
-      target-pdb:
-        type: string
-        description: 靶点PDB文件路径
-        required: true
-      library-file:
-        type: string
-        description: 化合物库文件路径（CSV格式，包含smiles列）
-        required: true
-      center-x:
-        type: float
-        description: 结合位点中心X坐标
-        required: true
-      center-y:
-        type: float
-        description: 结合位点中心Y坐标
-        required: true
-      center-z:
-        type: float
-        description: 结合位点中心Z坐标
-        required: true
-      size-x:
-        type: float
-        description: 结合位点盒子X方向大小
-        default: 20.0
-      size-y:
-        type: float
-        description: 结合位点盒子Y方向大小
-        default: 20.0
-      size-z:
-        type: float
-        description: 结合位点盒子Z方向大小
-        default: 20.0
-      output:
-        type: string
-        description: 结果输出路径
-        default: screening_results.csv
-      top-n:
-        type: integer
-        description: 返回Top N候选化合物
-        default: 20
-    executable: python skills/virtual_screening.py
-
   admet-predict:
-    description: ADMET性质预测，预测化合物的吸收、分布、代谢、排泄和毒性
+    description: Legacy: ADMET property prediction (deprecated, use run instead)
     parameters:
       smiles:
         type: string
-        description: 单个SMILES字符串（单模式）
+        description: Single SMILES
       input:
         type: string
-        description: 包含smiles列的CSV文件（批量模式）
+        description: Input CSV with smiles column
       output:
         type: string
-        description: 输出文件路径
+        description: Output CSV
         default: admet_results.csv
     executable: python skills/admet_prediction.py
 
-  experiment-design:
-    description: 实验方案智能设计
+  virtual-screening:
+    description: Legacy: Virtual screening (deprecated, use run instead)
     parameters:
-      type:
+      target-pdb:
         type: string
-        description: 实验类型（cell-viability/animal/kinase）
+        description: Target PDB file
         required: true
-      compound:
+      library-file:
         type: string
-        description: 化合物名称或SMILES
+        description: Compound library CSV with smiles
         required: true
-      target:
-        type: string
-        description: 靶点名称
-      output:
-        type: string
-        description: 输出协议路径
-        default: experiment_protocol.md
-    executable: python skills/experiment_design.py
-
-  data-analysis:
-    description: 实验数据自动分析
-    parameters:
-      input:
-        type: string
-        description: 实验数据文件路径
+      center-x:
+        type: float
+        description: Binding site center X
         required: true
-      type:
-        type: string
-        description: 数据类型（excel/csv/elisa/flow-cytometry）
+      center-y:
+        type: float
+        description: Binding site center Y
+        required: true
+      center-z:
+        type: float
+        description: Binding site center Z
         required: true
       output:
         type: string
-        description: 分析报告路径
-        default: data_analysis_report.md
-    executable: python skills/data_analysis.py
+        description: Output CSV
+        default: screening_results.csv
+    executable: python skills/virtual_screening.py
 
-configuration:
-  pubmed_email:
-    type: string
-    description: PubMed API访问邮箱
-    default: your@email.com
-  vina_path:
-    type: string
-    description: AutoDock Vina可执行文件路径
-    default: vina
-  mgltools_path:
-    type: string
-    description: MGLTools路径
-    default: /usr/local/mgltools
-  model_cache_dir:
-    type: string
-    description: AI模型缓存目录
-    default: ~/.cache/openclaw-drug/models
+skill_categories:
+  - dti: Drug-Target Interactions
+  - adr: Adverse Drug Reactions
+  - ddi: Drug-Drug Interactions
+  - pgx: Pharmacogenomics
+  - repurposing: Drug Repurposing
+  - knowledgebase: Drug Knowledgebases
+  - mechanism: Mechanisms of Action
+  - labeling: Drug Labeling
+  - toxicity: Drug Toxicity
+  - ontology: Ontology & Normalization
+  - combination: Drug Combinations
+  - properties: Molecular Properties
+  - disease: Drug-Disease Associations
+  - reviews: Patient Reviews
+  - nlp: NLP Datasets
 
 examples:
-  - description: 分析EGFR抑制剂相关文献
-    command: openclaw drug literature-analyze --keyword "EGFR inhibitor" --max-papers 100 --days 180
+  - description: Find all known targets of imatinib
+    command: drugclaw run --query "What are the known drug targets of imatinib?"
 
-  - description: 对EGFR靶点进行虚拟筛选
-    command: openclaw drug virtual-screening --target-pdb 1M17.pdb --library-file zinc_library.csv --center-x 10.0 --center-y 20.0 --center-z 30.0
+  - description: Check for interactions between warfarin and NSAIDs
+    command: drugclaw run --query "Are there clinically significant interactions between warfarin and ibuprofen?"
 
-  - description: 预测单个化合物的ADMET性质
-    command: openclaw drug admet-predict --smiles "C1=CC(=C(C=C1Cl)Cl)O"
+  - description: Predict ADMET properties for a compound
+    command: drugclaw run --query "Predict ADMET properties for this SMILES: C1=CC(=C(C=C1Cl)Cl)O"
 
-  - description: 批量预测化合物库的ADMET性质
-    command: openclaw drug admet-predict --input compounds.csv --output admet_results.csv
+  - description: Drug repurposing for triple-negative breast cancer
+    command: drugclaw run --query "Which approved drugs can be repurposed for triple-negative breast cancer?"
 
-categories:
-  - 文献分析
-  - 虚拟筛选
-  - ADMET预测
-  - 实验设计
-  - 数据分析
-
-repository: https://github.com/openclaw/openclaw-drug
-issues: https://github.com/openclaw/openclaw-drug/issues
+repository: https://github.com/caroline-li-bot/DrugClaw
+issues: https://github.com/caroline-li-bot/DrugClaw/issues

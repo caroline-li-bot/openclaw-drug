@@ -1,112 +1,201 @@
-# OpenClaw Drug - 药物研发自动化助手
+# DrugClaw - OpenClaw 药物研发自动化助手
 
-基于OpenClaw的药物研发全流程自动化工具集，覆盖从靶点发现到临床试验设计的全流程自动化。
+💊 **AI-powered full-stack drug discovery assistant based on OpenClaw**
 
-## 🎯 核心功能
+[中文README](/README_CN.md) | [Demo](https://drug.openclaw.ai)
 
-### 1. 文献与专利自动化分析
-- 自动抓取PubMed、ACS、ScienceDirect等数据库的最新文献
-- 提取靶点、化合物结构、实验数据等关键信息
-- 专利风险预警和侵权分析
-- 自动生成领域研究进展周报
+DrugClaw is an OpenClaw-native drug discovery automation assistant that accelerates the entire drug discovery workflow from literature analysis to experimental design. It combines tool use, domain skills, and agentic automation to help researchers get things done faster.
 
-### 2. 化合物虚拟筛选自动化
-- 对接AutoDock、Schrödinger等分子对接工具
-- 批量处理化合物库，自动计算结合能和ADMET性质
-- 基于AI模型预测化合物活性和毒性
-- 自动筛选出Top N候选化合物
+## 🎯 What DrugClaw Does
 
-### 3. 实验方案智能设计
-- 根据研究目标自动生成细胞实验、动物实验方案
-- 智能优化实验参数和对照组设计
-- 自动计算样本量和统计效力
-- 生成标准化的SOP文档
+DrugClaw covers the full drug discovery pipeline:
 
-### 4. 实验数据自动分析
-- 对接酶标仪、PCR仪等设备的输出数据
-- 自动进行统计分析和可视化
-- 异常值检测和实验结果可靠性评估
-- 自动生成实验报告和结论
+### 🔍 Literature & Knowledge
+- **Literature Analysis** - Automatic PubMed search, key information extraction, trend analysis
+- **Target Intelligence** - Build target dossiers from UniProt, OpenTargets, Reactome, STRING, ClinVar
+- **Evidence Synthesis** - Aggregate evidence from multiple databases for reasoned conclusions
 
-### 5. 临床试验设计辅助
-- 自动检索相似临床试验方案
-- 智能设计入组排除标准和终点指标
-- 不良事件风险预测
-- 生成临床试验注册所需文档
+### 🧪 Compound Screening & Prediction
+- **Virtual Screening** - Automated molecular docking with AutoDock Vina, post-processing and ranking
+- **ADMET Prediction** - Heuristic ADMET property prediction using ChemBERTa
+- **Drug-Target Interaction (DTI)** - Query ChEMBL, BindingDB, DGIdb, TTD for known interactions
+- **Molecule Generation** - Generate novel molecules based on scaffold constraints
 
-## 🛠️ 技术栈
+### 📊 Data Analysis & Experimental Design
+- **Experimental Protocol Design** - Automatic cell/animal experiment protocol generation
+- **Statistical Analysis** - Automated data processing, visualization and statistical testing
+- **Clinical Trial Design** - Protocol design assistance, eligibility criteria selection
 
-- **OpenClaw**: 自动化调度和技能框架
-- **RDKit**: 化学信息学处理
-- **AutoDock Vina**: 分子对接
-- **AlphaFold**: 蛋白质结构预测
-- **ChemBERTa**: 化合物性质预测
-- **PubChem/ChEMBL/ZINC**: 化合物数据库对接
-- **Pandas/NumPy/Scikit-learn**: 数据分析
-- **Plotly/Matplotlib**: 数据可视化
+### 🔬 Domain-Specific Skills
+- **Adverse Drug Reactions (ADR)** - Query FAERS, SIDER, nSIDES for adverse drug reactions
+- **Drug-Drug Interactions (DDI)** - Check interaction data from multiple sources
+- **Pharmacogenomics (PGx)** - Query PharmGKB for genotype-guided dosing
+- **Drug Repurposing** - Identify repurposing opportunities from RepoDB, DRKG
+- And more...
 
-## 📦 安装
+## 🤖 Agentic Workflow
+
+DrugClaw follows an agentic retrieval-execution pattern inspired by [QSong-github/DrugClaw](https://github.com/QSong-github/DrugClaw):
+
+```
+User Query → Planner Agent → Skill Selection → Code Agent → Retrieval → Reasoning → Report
+```
+
+1. **Planner Agent** - Analyzes the query, identifies entities, selects relevant skills
+2. **Code Agent** - Reads skill documentation, writes and executes resource-specific query code
+3. **Fallback Mechanism** - If code generation fails, falls back to pre-written deterministic retrieval scripts
+4. **Reasoning & Synthesis** - Aggregates evidence from multiple sources and generates a structured report
+
+## 🗺️ Skill Tree (15 Categories)
+
+| Category | Description | Data Sources |
+|----------|-------------|--------------|
+| **dti** | Drug-Target Interactions | ChEMBL, BindingDB, DGIdb, OpenTargets, TTD, STITCH |
+| **adr** | Adverse Drug Reactions | FAERS, SIDER, nSIDES, ADReCS |
+| **ddi** | Drug-Drug Interactions | MecDDI, DDInter, KEGG Drug |
+| **pgx** | Pharmacogenomics | PharmGKB, CPIC |
+| **repurposing** | Drug Repurposing | RepoDB, DRKG, OREGANO, Drug Repurposing Hub |
+| **knowledgebase** | Drug Knowledgebases | DrugBank, UniD3, IUPHAR/BPS, DrugCentral, WHO Essential Medicines |
+| **mechanism** | Mechanisms of Action | DRUGMECHDB |
+| **labeling** | Drug Labeling | DailyMed, openFDA, MedlinePlus |
+| **toxicity** | Drug Toxicity | UniTox, LiverTox, DILIrank |
+| **ontology** | Ontology & Normalization | RxNorm, ChEBI, ATC/DDD |
+| **combination** | Drug Combinations | DrugCombDB, DrugComb |
+| **properties** | Molecular Properties | GDSC, ChemBERTa |
+| **disease** | Drug-Disease Associations | SemaTyP |
+| **reviews** | Patient Reviews | WebMD, Drugs.com |
+| **nlp** | NLP Datasets | DDI Corpus, DrugProt, ADE Corpus, CADEC |
+
+## 🛠️ Tech Stack
+
+- **OpenClaw** - Agent framework, skill system, memory, multi-channel support
+- **RDKit** - Cheminformatics
+- **ChemBERTa-2** - Molecular property prediction
+- **ESMFold** - Protein structure prediction
+- **DiffDock** - Molecular docking
+- **AutoDock Vina** - Virtual screening
+- **LangChain** - RAG and agent orchestration
+- **Supabase** - Cloud database (optional)
+- **Flask** - Web UI
+
+## 📦 Installation
 
 ```bash
-# 克隆仓库
-git clone https://github.com/your-username/openclaw-drug.git
-cd openclaw-drug
+# Clone the repository
+git clone https://github.com/caroline-li-bot/DrugClaw.git
+cd DrugClaw
 
-# 安装依赖
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 
-# 安装OpenClaw技能
+# Install as OpenClaw skill
 openclaw skill install .
 ```
 
-## 🚀 使用示例
+See [DEPLOYMENT.md](/DEPLOYMENT.md) for more deployment options.
 
-### 1. 文献分析
+## 🚀 Quick Start
+
+### As OpenClaw Skill
+
+```python
+# In OpenClaw chat, just ask naturally:
+# "Find all known targets of imatinib and summarize potential adverse interactions"
+# "Screen for potential EGFR inhibitors from the ZINC library"
+# "Predict ADMET properties for this SMILES: CC1=CC=C(C=C1)N... "
+```
+
+### Command Line Interface
+
 ```bash
-openclaw drug literature analyze --keyword "EGFR inhibitor" --output report.md
+# Literature analysis
+drugclaw literature analyze --keyword "EGFR inhibitor" --output report.md
+
+# Virtual screening
+drugclaw screening run --target PDB:1M17 --library zinc15 --output candidates.csv
+
+# ADMET prediction
+drugclaw admet predict --smiles "C1=CC(=C(C=C1Cl)Cl)O" --output properties.csv
+
+# Experimental design
+drugclaw experiment design --type "cell viability" --compound "Gefitinib" --output protocol.md
 ```
 
-### 2. 虚拟筛选
-```bash
-openclaw drug screening run --target PDB:1M17 --library zinc12 --output candidates.csv
-```
+## ☁️ Web Deployment
 
-### 3. ADMET预测
-```bash
-openclaw drug admet predict --smiles "C1=CC(=C(C=C1Cl)Cl)O" --output properties.csv
-```
+DrugClaw can be deployed to Vercel with Supabase backend. See [DEPLOYMENT_VERCEL_SUPABASE.md](/DEPLOYMENT_VERCEL_SUPABASE.md) for step-by-step instructions.
 
-### 4. 实验方案生成
-```bash
-openclaw drug experiment design --type "cell viability" --compound "Gefitinib" --output protocol.md
-```
-
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
-openclaw-drug/
-├── skills/                      # OpenClaw技能模块
-│   ├── literature/              # 文献分析技能
-│   ├── screening/           # 虚拟筛选技能
-│   ├── admet/             # ADMET预测技能
-│   ├── experiment/       # 实验设计技能
-│   ├── analysis/           # 数据分析技能
-│   └── clinical/           # 临床设计技能
-├── utils/                       # 公共工具库
-│   ├── chem_utils.py     # 化学信息学工具
-│   ├── db_utils.py       # 数据库对接工具
-│   └── ml_utils.py         # AI模型工具
-├── models/                     # AI模型文件
-├── tests/                       # 测试用例
-├── docs/                        # 文档
-├── requirements.txt     # 依赖声明
-└── README.md           # 项目说明
+DrugClaw/
+├── drugclaw/                    # Main package
+│   ├── __init__.py
+│   ├── agent/                   # Agent architecture
+│   │   ├── planner.py           # Query planner agent
+│   │   ├── code_agent.py        # Code generation agent
+│   │   └── responder.py         # Final answer synthesizer
+│   ├── cli.py                   # Command-line interface
+│   ├── config.py                # Configuration handling
+│   └── main_system.py           # Main entrypoint
+├── skills/                      # Skill tree (15 categories)
+│   ├── dti/                     # Drug-Target Interactions
+│   │   └── */                   # Per-source skill: SKILL.md, example.py, retrieve.py
+│   ├── adr/                     # Adverse Drug Reactions
+│   ├── ddi/                     # Drug-Drug Interactions
+│   ├── pgx/                     # Pharmacogenomics
+│   ├── repurposing/             # Drug Repurposing
+│   ├── knowledgebase/           # Drug Knowledgebases
+│   ├── mechanism/               # Mechanisms of Action
+│   ├── labeling/                # Drug Labeling
+│   ├── toxicity/                # Drug Toxicity
+│   ├── ontology/                # Ontology & Normalization
+│   ├── combination/             # Drug Combinations
+│   ├── properties/              # Molecular Properties
+│   ├── disease/                 # Drug-Disease Associations
+│   ├── reviews/                 # Patient Reviews
+│   └── nlp/                     # NLP Datasets
+├── utils/                       # Utilities
+│   ├── chem_utils.py            # Cheminformatics tools
+│   ├── db_utils.py              # Database utilities
+│   ├── ml_utils.py              # ML models
+│   ├── sota_models.py           # SOTA models (ChemBERTa, ESMFold, DiffDock)
+│   └── supabase_utils.py        # Supabase integration (optional)
+├── web/                         # Web interface
+│   ├── app.py                   # Flask backend
+│   ├── templates/               # HTML templates
+│   └── static/                  # CSS/JS assets
+├── supabase/                    # Supabase configuration
+│   └── migrations/              # Database migrations
+├── examples/                    # Example usage scripts
+├── docs/                        # Documentation
+├── requirements.txt             # Python dependencies
+├── skill.yaml                   # OpenClaw skill manifest
+└── README.md                    # This file
 ```
 
-## 🤝 贡献
+## 🎯 Differences from other DrugClaw projects
 
-欢迎提交Issue和Pull Request！
+| Aspect | DrugClaw/DrugClaw | QSong-github/DrugClaw | **This DrugClaw** |
+|--------|-------------------|------------------------|-------------------|
+| **Base** | Rust agent runtime | LangGraph Agentic RAG | **OpenClaw-native skill** |
+| **Scope** | Full research workflow automation | Drug knowledge QA | **Full-stack drug discovery automation + agentic RAG** |
+| **Philosophy** | Generic agent with drug skills | Specialized RAG for drug questions | **Best of both: OpenClaw agent + 15-category skill tree + agentic workflow** |
 
-## 📄 许可证
+## 📄 License
 
-MIT License
+MIT License - see [LICENSE](/LICENSE) for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by [DrugClaw/DrugClaw](https://github.com/DrugClaw/DrugClaw) and [QSong-github/DrugClaw](https://github.com/QSong-github/DrugClaw)
+- Built on top of the [OpenClaw](https://github.com/openclaw/openclaw) agent framework
+- Uses publicly available biomedical databases and open-source tools
+
+---
+
+*DrugClaw is for research purposes only. It does not provide medical advice. All predictions should be experimentally validated.*
