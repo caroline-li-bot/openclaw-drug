@@ -146,6 +146,39 @@ openclaw skill install .
 
 ## 🚀 快速开始
 
+### 🎯 端到端示例：针对你的靶标发现新药
+
+如果你有一个蛋白靶标，想发现新的结合分子：
+
+```bash
+# 1. 安装系统依赖（AutoDock Vina, OpenBabel, MGLTools）
+sudo ./scripts/install_system_deps.sh
+
+# 2. 文献调研 - 了解靶标功能和疾病相关性
+drugclaw run --query "Summarize recent research on TREM2 role in Alzheimer's disease"
+
+# 3. 获取靶标信息整合
+drugclaw run --query "Get target information for TREM2 including function and disease association"
+
+# 4. 下载化合物库样本
+python scripts/download_public_datasets.py --dataset zinc_15_sample --output-dir ./data
+
+# 5. ADMET 预筛选 - 过滤掉不好的化合物
+drugclaw run --query "Predict ADMET for all compounds in data/zinc_15_sample/2k-compound-sample.csv --output admet_filtered.csv"
+
+# 6. 并行虚拟筛选 ✨ 自动使用全部 CPU 核心
+drugclaw virtual-screening \
+  --receptor ./trem2.pdb \
+  --center-x 10.0 --center-y 20.0 --center-z 30.0 \
+  --size-x 20 --size-y 20 --size-z 20 \
+  --input ./admet_filtered.csv \
+  --output ./trem2_screening_results.csv
+```
+
+完成！结果按亲和力排序（越低越好），你可以直接取 top N 拿去实验验证。
+
+---
+
 ### 1. 配置 API 密钥
 
 ```bash

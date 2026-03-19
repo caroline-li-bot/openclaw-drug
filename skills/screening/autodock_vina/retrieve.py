@@ -5,87 +5,102 @@ Usage: python retrieve.py receptor_pdb center_x center_y center_z box_size_x box
 """
 
 import sys
-import os
+import argparse
 import pandas as pd
-from drugclaw.virtual_screening.prep import prepare_receptor, prepare_ligand_from_smiles
-from drugclaw.virtual_screening.docking import run_vina_docking
-from drugclaw.virtual_screening.analysis import analyze_results
+from drugclaw.virtual_screening.prep import prepare_receptor
+from drugclaw.virtual_screening.batch_parallel import run_parallel_screening, save_results
 
 def main():
-    if len(sys.argv) < 10:
-        print("Usage: python retrieve.py receptor_pdb center_x center_y center_z box_size_x box_size_y box_size_z smiles_csv output_csv")
-        print("\nExample:")
-        print("  python retrieve.py 1M17.pdb 10.0 20.0 30.0 20.0 20.0 20.0 compounds.csv results.csv")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        description="AutoDock Vina Virtual Screening with parallel processing"
+    )
+    parser.add_argument(
+        'receptor_pdb',
+        help='Input receptor PDB file'
+    )
+    parser.add_argument(
+        'center_x', type=float,
+        help='Binding pocket center X coordinate'
+    )
+    parser.add_argument(
+        'center_y', type=float,
+        help='Binding pocket center Y coordinate'
+    )
+    parser.add_argument(
+        'center_z', type=float,
+        help='Binding pocket center Z coordinate'
+    )
+    parser.add_argument(
+        'size_x', type=float, default=20.0,
+        help='Box size X in Angstrom (default: 20.0)'
+    )
+    parser.add_argument(
+        'size_y', type=float, default=20.0,
+        help='Box size Y in Angstrom (default: 20.0)'
+    )
+    parser.add_argument(
+        'size_z', type=float, default=20.0,
+        help='Box size Z in Angstrom (default: 20.0)'
+    )
+    parser.add_argument(
+        'smiles_csv',
+        help='Input CSV file with "smiles" column'
+    )
+    parser.add_argument(
+        'output_csv',
+        help='Output CSV file for ranked results'
+    )
+    parser.add_argument(
+        '--output-dir', '-d', default='./docking_output',
+        help='Output directory for intermediate PDBQT files'
+    )
+    parser.add_argument(
+        '--cpus', '-c', type=int, default=None,
+        help='Number of parallel CPUs (default: all available)'
+    )
     
-    receptor_pdb = sys.argv[1]
-    center = (float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]))
-    box_size = (float(sys.argv[5]), float(sys.argv[6]), float(sys.argv[7]))
-    smiles_csv = sys.argv[8]
-    output_csv = sys.argv[9]
+    args = parser.parse_args()
     
-    print(f"=== Starting AutoDock Vina Virtual Screening ===")
-    print(f"Receptor: {receptor_pdb}")
+    center = (args.center_x, args.center_y, args.center_z)
+    box_size = (args.size_x, args.size_y, args.size_z)
+    
+    print(f"=== Starting AutoDock Vina Virtual Screening (Parallel) ===")
+    print(f"Receptor: {args.receptor_pdb}")
     print(f"Binding pocket center: {center}")
     print(f"Box size: {box_size}")
-    print(f"Input compounds: {smiles_csv}")
-    print(f"Output results: {output_csv}")
+    print(f"Input compounds: {args.smiles_csv}")
+    print(f"Output results: {args.output_csv}")
+    print(f"Output directory: {args.output_dir}")
+    if args.cpus:
+        print(f"Using {args.cpus} parallel CPUs")
     print()
     
     # Step 1: Prepare receptor
-    print("1/4 Preparing receptor...")
-    receptor_pdbqt = prepare_receptor(receptor_pdb)
+    print("1/3 Preparing receptor...")
+    receptor_pdbqt = prepare_receptor(args.receptor_pdb)
     print(f"   Receptor prepared: {receptor_pdbqt}")
     
-    # Step 2: Prepare ligands
-    print(f"\n2/4 Preparing ligands...")
-    df = pd.read_csv(smiles_csv)
-    if 'smiles' not in df.columns:
-        print("ERROR: Input CSV must have 'smiles' column")
-        sys.exit(1)
+    # Step 2: Run parallel docking
+    print(f"\n2/3 Running parallel docking...")
+    results = run_parallel_screening(
+        args.receptor_pdb,
+        center,
+        box_size,
+        args.smiles_csv,
+        args.output_dir,
+        args.cpus
+    )
     
-    ligands = []
-    failed = 0
-    for idx, row in df.iterrows():
-        smiles = row['smiles']
-        name = row.get('name', f"ligand_{idx}")
-        ligand_pdbqt = prepare_ligand_from_smiles(smiles, name)
-        if ligand_pdbqt:
-            ligands.append((idx, smiles, ligand_pdbqt))
-        else:
-            failed += 1
+    # Step 3: Save and analyze
+    print(f"\n3/3 Saving results...")
+    save_results(results, args.output_csv)
     
-    print(f"   Successfully prepared {len(ligands)} ligands, {failed} failed")
+    df_results = pd.read_csv(args.output_csv)
     
-    # Step 3: Run docking
-    print(f"\n3/4 Running docking...")
-    import multiprocessing
-    cpu = min(4, multiprocessing.cpu_count())
-    print(f"   Using {cpu} CPUs")
-    
-    results = []
-    for idx, smiles, ligand_pdbqt in ligands:
-        affinity = run_vina_docking(
-            receptor_pdbqt, ligand_pdbqt,
-            center, box_size,
-            cpu=1,
-            output_dir="docking_output"
-        )
-        if affinity is not None:
-            results.append({
-                'index': idx,
-                'smiles': smiles,
-                'affinity_kcal_mol': affinity
-            })
-    
-    print(f"   Completed {len(results)} successful dockings")
-    
-    # Step 4: Analyze and save
-    print(f"\n4/4 Analyzing and saving results...")
-    df_results = analyze_results(results, output_csv)
-    
-    print(f"\n✅ Done! Results saved to {output_csv}")
-    print(f"\nTop 5 compounds by binding affinity:")
+    print(f"\n✅ Done!")
+    print(f"   Total compounds: {len(df_results)}")
+    print(f"   Successful docking: {len(df_results.dropna())}")
+    print(f"\nTop 5 compounds by binding affinity (lower = better):")
     print(df_results.head(5).to_string(index=False))
 
 if __name__ == "__main__":

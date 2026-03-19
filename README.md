@@ -146,6 +146,39 @@ See [DEPLOYMENT.md](https://github.com/caroline-li-bot/DrugClaw/blob/main/DEPLOY
 
 ## 🚀 Quick Start
 
+### 📋 End-to-End Example: Discover new molecules for your target
+
+If you have a protein target that you want to discover new binders:
+
+```bash
+# 1. Install system dependencies (AutoDock Vina, OpenBabel, MGLTools)
+sudo ./scripts/install_system_deps.sh
+
+# 2. Literature review - understand your target
+drugclaw run --query "Summarize recent research on TREM2 role in Alzheimer's disease"
+
+# 3. Get target information from public databases
+drugclaw run --query "Get target information for TREM2 including function and disease association"
+
+# 4. Download sample compound library
+python scripts/download_public_datasets.py --dataset zinc_15_sample --output-dir ./data
+
+# 5. ADMET pre-filtering (filter out bad compounds)
+drugclaw run --query "Predict ADMET for all compounds in data/zinc_15_sample/2k-compound-sample.csv --output admet_filtered.csv"
+
+# 6. Parallel virtual screening (uses all CPU cores by default)
+drugclaw virtual-screening \
+  --receptor ./trem2.pdb \
+  --center-x 10.0 --center-y 20.0 --center-z 30.0 \
+  --size-x 20 --size-y 20 --size-z 20 \
+  --input ./admet_filtered.csv \
+  --output ./trem2_screening_results.csv
+```
+
+That's it! You'll get a CSV ranked by binding affinity, top candidates are ready for experimental validation.
+
+---
+
 ### 1. Configure your API key
 
 ```bash

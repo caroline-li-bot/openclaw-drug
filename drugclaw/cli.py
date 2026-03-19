@@ -46,6 +46,20 @@ def setup_parser() -> argparse.ArgumentParser:
     run_parser.add_argument('--save-md-report', action='store_true', help='Save as Markdown report')
     run_parser.add_argument('--debug-agents', action='store_true', help='Debug agent output')
     
+    # virtual-screening command
+    vs_parser = subparsers.add_parser('virtual-screening', help='Parallel virtual screening with AutoDock Vina')
+    vs_parser.add_argument('--receptor', '-r', required=True, help='Input receptor PDB file')
+    vs_parser.add_argument('--center-x', '-cx', type=float, required=True, help='Binding pocket center X')
+    vs_parser.add_argument('--center-y', '-cy', type=float, required=True, help='Binding pocket center Y')
+    vs_parser.add_argument('--center-z', '-cz', type=float, required=True, help='Binding pocket center Z')
+    vs_parser.add_argument('--size-x', '-sx', type=float, default=20.0, help='Box size X')
+    vs_parser.add_argument('--size-y', '-sy', type=float, default=20.0, help='Box size Y')
+    vs_parser.add_argument('--size-z', '-sz', type=float, default=20.0, help='Box size Z')
+    vs_parser.add_argument('--input', '-i', required=True, help='Input CSV with smiles column')
+    vs_parser.add_argument('--output', '-o', required=True, help='Output CSV for results')
+    vs_parser.add_argument('--output-dir', '-d', default='./docking_output', help='Output directory for intermediates')
+    vs_parser.add_argument('--cpus', '-c', type=int, default=None, help='Number of parallel CPUs (default: all available)')
+    
     return parser
 
 def list_skills(drugclaw: DrugClawSystem):
@@ -164,6 +178,37 @@ def main():
                 f.write(result['answer'])
             
             print(f"\nReport saved to: {output_path}")
+    elif args.command == 'virtual-screening':
+        # Parallel virtual screening
+        from drugclaw.virtual_screening.batch_parallel import run_parallel_screening, save_results
+        import pandas as pd
+        
+        center = (args.center_x, args.center_y, args.center_z)
+        box_size = (args.size_x, args.size_y, args.size_z)
+        
+        print(f"=== Starting parallel virtual screening ===\n")
+        print(f"Receptor: {args.receptor}")
+        print(f"Binding pocket: center={center}, box={box_size}")
+        print(f"Input: {args.input}")
+        print(f"Output: {args.output}")
+        
+        results = run_parallel_screening(
+            args.receptor,
+            center,
+            box_size,
+            args.input,
+            args.output_dir,
+            args.cpus
+        )
+        
+        save_results(results, args.output)
+        
+        df_results = pd.read_csv(args.output)
+        print(f"\n✅ Done!")
+        print(f"   Total compounds: {len(df_results)}")
+        print(f"   Successful docking: {len(df_results.dropna())}")
+        print(f"\nTop 5 compounds by binding affinity (lower = better):")
+        print(df_results.head(5).to_string(index=False))
 
 if __name__ == '__main__':
     main()
