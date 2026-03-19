@@ -1,14 +1,34 @@
-# DrugClaw - OpenClaw 药物研发自动化助手
+<p align="center">
+  <img src="support/DrugClaw_Logo.png" alt="DrugClaw Logo" width="600"/>
+</p>
 
-💊 **AI-powered full-stack drug discovery assistant based on OpenClaw**
+<h1 align="center">DrugClaw</h1>
+<p align="center">
+  <strong>AI-powered full-stack drug discovery assistant based on OpenClaw</strong><br>
+  Accelerate your drug discovery workflow from literature analysis to experimental design
+</p>
 
-[中文README](/README_CN.md) | [Demo](https://drug.openclaw.ai)
+<p align="center">
+  <a href="https://github.com/caroline-li-bot/DrugClaw/blob/main/LICENSE"><img src="https://img.shields.io/github/license/caroline-li-bot/DrugClaw.svg" alt="License"></a>
+  <a href="https://pypi.org/project/drugclaw/"><img src="https://img.shields.io/pypi/v/drugclaw.svg" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/drugclaw"><img src="https://img.shields.io/badge/domain-drug%20discovery-blue.svg" alt="Domain"></a>
+  <a href="https://github.com/psf/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style"></a>
+</p>
+
+<p align="center">
+  <a href="/README_CN.md">中文 README</a> | 
+  <a href="https://drug.openclaw.ai">Live Demo</a> |
+  <a href="#quick-start">Quick Start</a> |
+  <a href="#-skill-tree">Skill Tree</a>
+</p>
+
+---
 
 DrugClaw is an OpenClaw-native drug discovery automation assistant that accelerates the entire drug discovery workflow from literature analysis to experimental design. It combines tool use, domain skills, and agentic automation to help researchers get things done faster.
 
 ## 🎯 What DrugClaw Does
 
-DrugClaw covers the full drug discovery pipeline:
+DrugClaw covers the full drug discovery pipeline with an agentic workflow:
 
 ### 🔍 Literature & Knowledge
 - **Literature Analysis** - Automatic PubMed search, key information extraction, trend analysis
@@ -27,30 +47,52 @@ DrugClaw covers the full drug discovery pipeline:
 - **Clinical Trial Design** - Protocol design assistance, eligibility criteria selection
 
 ### 🔬 Domain-Specific Skills
-- **Adverse Drug Reactions (ADR)** - Query FAERS, SIDER, nSIDES for adverse drug reactions
-- **Drug-Drug Interactions (DDI)** - Check interaction data from multiple sources
-- **Pharmacogenomics (PGx)** - Query PharmGKB for genotype-guided dosing
-- **Drug Repurposing** - Identify repurposing opportunities from RepoDB, DRKG
-- And more...
+
+| Category | Description |
+|----------|-------------|
+| **Adverse Drug Reactions (ADR)** | Query FAERS, SIDER, nSIDES for adverse drug reactions |
+| **Drug-Drug Interactions (DDI)** | Check interaction data from multiple sources |
+| **Pharmacogenomics (PGx)** | Query PharmGKB for genotype-guided dosing |
+| **Drug Repurposing** | Identify repurposing opportunities from RepoDB, DRKG |
+| And more... | See full [skill tree](#-skill-tree) below |
 
 ## 🤖 Agentic Workflow
 
-DrugClaw follows an agentic retrieval-execution pattern inspired by [QSong-github/DrugClaw](https://github.com/QSong-github/DrugClaw):
+Inspired by [QSong-github/DrugClaw](https://github.com/QSong-github/DrugClaw), DrugClaw follows an agentic retrieval-execution pattern:
 
-```
-User Query → Planner Agent → Skill Selection → Code Agent → Retrieval → Reasoning → Report
+```mermaid
+flowchart TD
+    A[User Query] --> B[Planner Agent]
+    B --> C[Analyze Query & Identify Entities]
+    C --> D[Select Relevant Skills]
+    D --> E[Code Agent]
+    E --> F[Read SKILL.md + example.py]
+    F --> G[Generate Custom Query Code]
+    G --> H[Execute Code]
+    H -- Success --> I[Collect Evidence]
+    H -- Failure --> J[Fallback to retrieve.py]
+    J --> I
+    I --> K[Responder]
+    K --> L[Synthesize Answer]
+    L --> M[Graph Reasoning for Complex Queries]
+    M --> N[Final Report]
 ```
 
 1. **Planner Agent** - Analyzes the query, identifies entities, selects relevant skills
-2. **Code Agent** - Reads skill documentation, writes and executes resource-specific query code
+2. **Code Agent** - Reads skill documentation, writes and executes resource-specific query code ("vibe coding")
 3. **Fallback Mechanism** - If code generation fails, falls back to pre-written deterministic retrieval scripts
 4. **Reasoning & Synthesis** - Aggregates evidence from multiple sources and generates a structured report
+
+Three thinking modes:
+- **SIMPLE** - Direct retrieval and answer for simple queries
+- **GRAPH** - Graph-based multi-hop evidence synthesis for complex queries
+- **WEB_ONLY** - Use only web search for recent information
 
 ## 🗺️ Skill Tree (15 Categories)
 
 | Category | Description | Data Sources |
 |----------|-------------|--------------|
-| **dti** | Drug-Target Interactions | ChEMBL, BindingDB, DGIdb, OpenTargets, TTD, STITCH |
+| **dti** | Drug-Target Interactions | ChEMBL, BindingDB, DGIdb, Open Targets, TTD, STITCH |
 | **adr** | Adverse Drug Reactions | FAERS, SIDER, nSIDES, ADReCS |
 | **ddi** | Drug-Drug Interactions | MecDDI, DDInter, KEGG Drug |
 | **pgx** | Pharmacogenomics | PharmGKB, CPIC |
@@ -75,6 +117,7 @@ User Query → Planner Agent → Skill Selection → Code Agent → Retrieval �
 - **DiffDock** - Molecular docking
 - **AutoDock Vina** - Virtual screening
 - **LangChain** - RAG and agent orchestration
+- **OpenAI API** - LLM for code generation and reasoning
 - **Supabase** - Cloud database (optional)
 - **Flask** - Web UI
 
@@ -92,6 +135,9 @@ source .venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Install the package
+pip install -e .
+
 # Install as OpenClaw skill
 openclaw skill install .
 ```
@@ -100,29 +146,44 @@ See [DEPLOYMENT.md](/DEPLOYMENT.md) for more deployment options.
 
 ## 🚀 Quick Start
 
-### As OpenClaw Skill
-
-```python
-# In OpenClaw chat, just ask naturally:
-# "Find all known targets of imatinib and summarize potential adverse interactions"
-# "Screen for potential EGFR inhibitors from the ZINC library"
-# "Predict ADMET properties for this SMILES: CC1=CC=C(C=C1)N... "
-```
-
-### Command Line Interface
+### 1. Configure your API key
 
 ```bash
-# Literature analysis
-drugclaw literature analyze --keyword "EGFR inhibitor" --output report.md
+cp navigator_api_keys.example.json navigator_api_keys.json
+# Edit navigator_api_keys.json and add your OpenAI API key
+```
 
-# Virtual screening
-drugclaw screening run --target PDB:1M17 --library zinc15 --output candidates.csv
+### 2. Check your setup
 
-# ADMET prediction
-drugclaw admet predict --smiles "C1=CC(=C(C=C1Cl)Cl)O" --output properties.csv
+```bash
+drugclaw doctor
+drugclaw list
+```
 
-# Experimental design
-drugclaw experiment design --type "cell viability" --compound "Gefitinib" --output protocol.md
+### 3. Run the demo
+
+```bash
+drugclaw demo
+```
+
+### 4. Run your own query
+
+```bash
+# Simple query
+drugclaw run --query "What are the known drug targets of imatinib?"
+
+# Complex query with graph reasoning
+drugclaw run --query "What are the adverse drug reactions and interaction risks of combining warfarin with NSAIDs?" --thinking-mode graph
+
+# Save as Markdown report
+drugclaw run --query "Which approved drugs can be repurposed for triple-negative breast cancer?" --save-md-report
+```
+
+### As OpenClaw Skill
+
+In OpenClaw chat, just ask naturally:
+```
+Find all known targets of imatinib and summarize potential adverse interactions
 ```
 
 ## ☁️ Web Deployment
@@ -133,18 +194,18 @@ DrugClaw can be deployed to Vercel with Supabase backend. See [DEPLOYMENT_VERCEL
 
 ```
 DrugClaw/
-├── drugclaw/                    # Main package
+├── drugclaw/                    # Main Python package
 │   ├── __init__.py
 │   ├── agent/                   # Agent architecture
-│   │   ├── planner.py           # Query planner agent
+│   │   ├── planner.py           # Query planning agent
 │   │   ├── code_agent.py        # Code generation agent
 │   │   └── responder.py         # Final answer synthesizer
 │   ├── cli.py                   # Command-line interface
 │   ├── config.py                # Configuration handling
-│   └── main_system.py           # Main entrypoint
-├── skills/                      # Skill tree (15 categories)
+│   └── main_system.py           # Main system entrypoint
+├── skills/                      # 15-category skill tree
 │   ├── dti/                     # Drug-Target Interactions
-│   │   └── */                   # Per-source skill: SKILL.md, example.py, retrieve.py
+│   │   └── chembl/              # Per-source skill: SKILL.md, example.py, retrieve.py
 │   ├── adr/                     # Adverse Drug Reactions
 │   ├── ddi/                     # Drug-Drug Interactions
 │   ├── pgx/                     # Pharmacogenomics
@@ -173,18 +234,29 @@ DrugClaw/
 │   └── migrations/              # Database migrations
 ├── examples/                    # Example usage scripts
 ├── docs/                        # Documentation
+├── support/                     # Project assets (logo, images)
 ├── requirements.txt             # Python dependencies
+├── pyproject.toml               # Package configuration
 ├── skill.yaml                   # OpenClaw skill manifest
 └── README.md                    # This file
 ```
 
 ## 🎯 Differences from other DrugClaw projects
 
-| Aspect | DrugClaw/DrugClaw | QSong-github/DrugClaw | **This DrugClaw** |
+| Aspect | [DrugClaw/DrugClaw](https://github.com/DrugClaw/DrugClaw) | [QSong-github/DrugClaw](https://github.com/QSong-github/DrugClaw) | **caroline-li-bot/DrugClaw** |
 |--------|-------------------|------------------------|-------------------|
 | **Base** | Rust agent runtime | LangGraph Agentic RAG | **OpenClaw-native skill** |
 | **Scope** | Full research workflow automation | Drug knowledge QA | **Full-stack drug discovery automation + agentic RAG** |
 | **Philosophy** | Generic agent with drug skills | Specialized RAG for drug questions | **Best of both: OpenClaw agent + 15-category skill tree + agentic workflow** |
+| **Key Feature** | Multi-channel support, persistent memory | Structured skill tree, vibe coding retrieval | OpenClaw integration, optional cloud deployment |
+
+## 📊 Example Queries
+
+- "What are the known targets, adverse effects, and interaction risks of imatinib?"
+- "Which approved drugs may be repurposed for triple-negative breast cancer?"
+- "What pharmacogenomic guidance exists for clopidogrel and CYP2C19?"
+- "Are there clinically meaningful interactions between warfarin and NSAIDs?"
+- "Predict ADMET properties for this SMILES: `CC1=CC=C(C=C1)NC(=O)C2=CC=C(O)C=C2`"
 
 ## 📄 License
 

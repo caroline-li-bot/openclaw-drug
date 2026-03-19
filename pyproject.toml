@@ -1,6 +1,6 @@
 [project]
 name = "drugclaw"
-version = "0.1.0"
+version = "0.2.0"
 authors = [
   { name="DrugClaw Contributors", email="contributor@drugclaw.ai" }
 ]
@@ -41,7 +41,11 @@ dependencies = [
     "matplotlib>=3.7.0",
     "plotly>=5.15.0",
     "transformers>=4.30.0",
-    "torch>=2.0.0"
+    "torch>=2.0.0",
+    "chromadb>=0.4.0",
+    "pypdf>=3.0.0",
+    "sentence-transformers>=2.2.0",
+    "huggingface-hub>=0.16.0"
 ]
 
 [project.scripts]

@@ -13,13 +13,17 @@ from .agent.planner import PlannerAgent, QueryAnalysis
 from .agent.code_agent import CodeAgent
 from .agent.responder import Responder, Evidence, SynthesizedAnswer
 from .config import Config
+from .rag.literature_rag import LiteratureRAG
+from .kg.graph_builder import KnowledgeGraph
 
 logger = logging.getLogger(__name__)
 
 class DrugClawSystem:
     """Main DrugClaw system"""
     
-    def __init__(self, config: Config, skills_root: str = "skills"):
+    def __init__(self, config: Config, skills_root: str = "skills", 
+                 rag_db_path: str = "./data/chroma_db", 
+                 kg_json_path: Optional[str] = None):
         self.config = config
         self.planner = PlannerAgent()
         self.code_agent = CodeAgent(skills_root=skills_root)
@@ -32,6 +36,19 @@ class DrugClawSystem:
             base_url=config.base_url,
             timeout=config.timeout
         )
+        
+        # Initialize Literature RAG
+        self.rag = LiteratureRAG(
+            db_path=rag_db_path,
+            openai_api_key=config.api_key,
+            openai_base_url=config.base_url,
+            openai_model=config.model
+        )
+        
+        # Initialize Knowledge Graph if path provided
+        self.kg: Optional[KnowledgeGraph] = None
+        if kg_json_path and os.path.exists(kg_json_path):
+            self.kg = KnowledgeGraph.from_json(kg_json_path)
     
     def get_available_skills(self) -> Dict[str, List[str]]:
         """Get all available skills organized by category"""
@@ -218,3 +235,35 @@ Retrieve information for these entities: {', '.join(entities)}
 Write a complete Python script that retrieves and prints the information. Follow the example pattern exactly. Print the output in human-readable format.
 """
         return prompt
+    
+    # === RAG functionality ===
+    
+    def ingest_pdf(self, pdf_path: str, metadata: Optional[Dict] = None) -> int:
+        """Ingest a PDF into the literature RAG"""
+        return self.rag.ingest_pdf(pdf_path, metadata)
+    
+    def ingest_pdf_directory(self, dir_path: str) -> int:
+        """Ingest all PDFs in a directory into RAG"""
+        return self.rag.ingest_directory(dir_path)
+    
+    def literature_rag_query(self, question: str, top_k: int = 5) -> Dict[str, Any]:
+        """Query the literature RAG"""
+        return self.rag.query(question, top_k)
+    
+    def get_rag_stats(self) -> Dict[str, Any]:
+        """Get statistics about RAG collection"""
+        return self.rag.get_statistics()
+    
+    # === Knowledge Graph functionality ===
+    
+    def load_knowledge_graph(self, kg_json_path: str) -> None:
+        """Load knowledge graph from JSON"""
+        self.kg = KnowledgeGraph.from_json(kg_json_path)
+    
+    def kg_summary_entity(self, name: str) -> Dict[str, Any]:
+        """Get summary of entity from knowledge graph"""
+        if not self.kg:
+            return {'error': 'Knowledge graph not loaded'}
+        from .kg.reasoner import GraphReasoner
+        reasoner = GraphReasoner(self.kg)
+        return reasoner.summarize_entity(name)
