@@ -16,10 +16,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/caroline-li-bot/DrugClaw/blob/main/README_CN.md">中文 README</a> | 
+  <a href="./README_CN.md">中文 README</a> | 
   <a href="https://drug.openclaw.ai">Live Demo</a> |
-  <a href="https://github.com/caroline-li-bot/DrugClaw#quick-start">Quick Start</a> |
-  <a href="https://github.com/caroline-li-bot/DrugClaw#-skill-tree">Skill Tree</a>
+  <a href="#quick-start">Quick Start</a> |
+  <a href="#-skill-tree">Skill Tree</a>
 </p>
 
 ---
